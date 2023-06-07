@@ -1,0 +1,392 @@
+
+
+#define LAA 7
+
+#include <Ethernet.h>
+#include <EthernetUdp.h>
+#include "/home/stud/Arduino/toneMelody/pitches.h"
+
+int pinA = 6;
+int pinB = 5;
+int pinC = 4;
+int pinD = 3;
+int pinE = 9;
+int pinF = 8;
+int pinG = 7;
+int buzz = 2;
+int t = 1000;
+int turned = 0;
+//Parameters
+const int pirPin  = A1;
+
+//Variables
+int pirStatus  = 0;
+
+// Enter a MAC address and IP address for your controller below.
+// The IP address will be dependent on your local network:
+byte mac[] = {
+  0x42, 0xAD, 0xBE, 0xEF, 0xFE, 0xED
+};
+IPAddress ip(10, 33, 109,50);
+
+unsigned int localPort = 8888;      // local port to listen on
+
+// buffers for receiving and sending data
+char packetBuffer[UDP_TX_PACKET_MAX_SIZE];  // buffer to hold incoming packet,
+char * ReplyBuffer = "acknowledged";        // a string to send back
+String AT="AT";
+String ResetZ="Z";
+String ledoff="l";
+String ledon="L";
+
+ //notes in the melody:
+int melody[] = {
+  NOTE_C4, NOTE_G3, NOTE_G3, NOTE_A3, NOTE_G3, 0, NOTE_B3, NOTE_C4
+};
+
+// Musique star wars
+int dark[] = {
+  NOTE_G3, NOTE_G3, NOTE_G3, NOTE_E3, NOTE_AS3, NOTE_G3, NOTE_E3, NOTE_AS3,
+  NOTE_G3, NOTE_E3, NOTE_G3, NOTE_D3, NOTE_D3, NOTE_D3, NOTE_AS3, NOTE_AS3,
+  NOTE_AS3, NOTE_G3, NOTE_AS3, NOTE_E3, NOTE_G3, NOTE_E3, NOTE_G3
+};
+
+int noteDurations2[] = {
+  4, 4, 4, 2, 8, 4, 2, 8,
+  4, 2, 4, 2, 4, 4, 8, 4,
+  8, 4, 8, 4, 8, 4, 4
+};
+
+// note durations: 4 = quarter note, 8 = eighth note, etc.:
+int noteDurations[] = {
+  4, 8, 8, 4, 4, 4, 4, 4
+};
+
+int calculateNoteDuration(int noteDuration) {
+  return 1000 / noteDuration;
+}
+
+
+
+// Nombre de 0-9
+void num0(){
+  digitalWrite(pinA , 1);
+  digitalWrite(pinB , 1);
+  digitalWrite(pinC , 1);
+  digitalWrite(pinD , 1);
+  digitalWrite(pinE , 1);
+  digitalWrite(pinF , 1);
+  digitalWrite(pinG , 0);
+  delay(t);
+}
+
+void num1(){
+  digitalWrite(pinA , 0);
+  digitalWrite(pinB , 1);
+  digitalWrite(pinC , 1);
+  digitalWrite(pinD , 0);
+  digitalWrite(pinE , 0);
+  digitalWrite(pinF , 0);
+  digitalWrite(pinG , 0);
+  delay(t);
+}
+
+void num2(){
+  digitalWrite(pinA , 1);
+  digitalWrite(pinB , 1);
+  digitalWrite(pinC , 0);
+  digitalWrite(pinD , 1);
+  digitalWrite(pinE , 1);
+  digitalWrite(pinF , 0);
+  digitalWrite(pinG , 1);
+  delay(t);
+}
+
+void num3(){
+  digitalWrite(pinA , 1);
+  digitalWrite(pinB , 1);
+  digitalWrite(pinC , 1);
+  digitalWrite(pinD , 1);
+  digitalWrite(pinE , 0);
+  digitalWrite(pinF , 0);
+  digitalWrite(pinG , 1);
+  delay(t);
+}
+
+void num4(){
+  digitalWrite(pinA , 0);
+  digitalWrite(pinB , 1);
+  digitalWrite(pinC , 1);
+  digitalWrite(pinD , 0);
+  digitalWrite(pinE , 0);
+  digitalWrite(pinF , 1);
+  digitalWrite(pinG , 1);
+  delay(t);
+}
+
+void num5(){
+  digitalWrite(pinA , 1);
+  digitalWrite(pinB , 0);
+  digitalWrite(pinC , 1);
+  digitalWrite(pinD , 1);
+  digitalWrite(pinE , 0);
+  digitalWrite(pinF , 1);
+  digitalWrite(pinG , 1);
+  delay(t);
+}
+
+void num6(){
+  digitalWrite(pinA , 1);
+  digitalWrite(pinB , 0);
+  digitalWrite(pinC , 1);
+  digitalWrite(pinD , 1);
+  digitalWrite(pinE , 1);
+  digitalWrite(pinF , 1);
+  digitalWrite(pinG , 1);
+  delay(t);
+}
+
+void num7(){
+  digitalWrite(pinA , 1);
+  digitalWrite(pinB , 1);
+  digitalWrite(pinC , 1);
+  digitalWrite(pinD , 0);
+  digitalWrite(pinE , 0);
+  digitalWrite(pinF , 0);
+  digitalWrite(pinG , 0);
+  delay(t);
+}
+
+
+
+void num8(){
+  digitalWrite(pinA , 1);
+  digitalWrite(pinB , 1);
+  digitalWrite(pinC , 1);
+  digitalWrite(pinD , 1);
+  digitalWrite(pinE , 1);
+  digitalWrite(pinF , 1);
+  digitalWrite(pinG , 1);
+  delay(t);
+}
+
+
+
+void num9(){
+  digitalWrite(pinA , 1);
+  digitalWrite(pinB , 1);
+  digitalWrite(pinC , 1);
+  digitalWrite(pinD , 1);
+  digitalWrite(pinE , 0);
+  digitalWrite(pinF , 1);
+  digitalWrite(pinG , 1);
+  delay(t);
+}
+
+
+
+void compteur(){
+   /* La fonction compteur est la boucle de notre décompte */
+   num9();
+
+  // 1
+  num8();
+
+  // 2
+  num7();
+
+  // 3
+  num6();
+
+  // 4
+  num5();
+
+  // 5
+  num4();
+
+  // 6
+  num3();
+
+  // 7
+  num2();
+
+  // 8
+  num1();
+
+  // 9
+  num0();
+
+  digitalWrite(A0, HIGH);  /* Active le ventilo */
+    }
+
+void doledon(){
+  digitalWrite(LAA, HIGH);
+  Serial.println(" ON ");
+  delay(1000);
+  turned ++ ; /* La variable turned permet au programme de savoir si il est lancé par UDP ou non (0 pas lancé 1 lancé)*/
+ 
+}
+
+void readPIR( ) { /* Fonction lecture de la velur du PIR */
+  ////Test routine for PIR
+  pirStatus = digitalRead(pirPin);
+  Serial.println(pirStatus);
+ 
+  delay(100);
+}
+
+void doledoff(){
+  digitalWrite(LAA, LOW);
+ delay(1000);
+  Serial.println("noir");
+}
+
+void(* resetFunc) (void) = 0;//declare reset function at address 0
+void traite (char * question)
+{
+  String Q,isat,cmd;
+  Q=String(question);
+  isat=Q.substring(0,2);
+  cmd=Q.substring(2,3);
+  if (AT.equals(isat))
+  {
+    Serial.print("doing: ");
+    Serial.println(cmd);
+    if (cmd.equals(ResetZ))
+      {
+      Serial.println("Reseting");
+      delay(1000);
+      resetFunc();
+      delay(1000);
+      Serial.println("Reset done");
+      }
+    if (cmd.equals(ledon))
+      {doledon();ReplyBuffer="LEDON";}
+    if (cmd.equals(ledoff))
+      {doledoff();ReplyBuffer="LEDoff";}
+  }
+  else
+    {
+      Serial.print("Erreur: ");
+      Serial.println(question);
+    }
+}
+void setup() {
+ 
+  // put your setup code here, to run once:
+  pinMode(pirPin, INPUT);
+  pinMode(pinA, OUTPUT);
+  pinMode(pinB, OUTPUT);
+  pinMode(pinC, OUTPUT);
+  pinMode(pinD, OUTPUT);
+  pinMode(pinE, OUTPUT);
+  pinMode(pinF, OUTPUT);
+  pinMode(pinG, OUTPUT);
+  pinMode(A0, OUTPUT);
+
+  // You can use Ethernet.init(pin) to configure the CS pin
+  Ethernet.init(10);  // Most Arduino shields
+  //Ethernet.init(5);   // MKR ETH shield
+  //Ethernet.init(0);   // Teensy 2.0
+  //Ethernet.init(20);  // Teensy++ 2.0
+  //Ethernet.init(15);  // ESP8266 with Adafruit Featherwing Ethernet
+  //Ethernet.init(33);  // ESP32 with Adafruit Featherwing Ethernet
+
+  // start the Ethernet
+  Ethernet.begin(mac, ip);
+
+ Serial.println(Ethernet.localIP());
+ 
+  // initialize digital pin LAA as an output.
+  pinMode(LAA, OUTPUT);
+
+ 
+  // Open serial communications and wait for port to open:
+  Serial.begin(9600);
+  while (!Serial) {
+    ; // wait for serial port to connect. Needed for native USB port only
+  }
+  Serial.println("AF's UDP Com");
+ 
+ 
+  // Check for Ethernet hardware present
+  if (Ethernet.hardwareStatus() == EthernetNoHardware) {
+    Serial.println("Ethernet shield was not found.  Sorry, can't run without hardware. :(");
+    while (true) {
+      delay(1); // do nothing, no point running without Ethernet hardware
+    }
+  }
+  if (Ethernet.linkStatus() == LinkOFF) {
+    Serial.println("Ethernet cable is not connected.");
+  }
+
+  // start UDP
+  Udp.begin(localPort);
+}
+
+void loop() {
+  // if there's data available, read a packet
+  readPIR(); /* commence à lire les valeurs du capteur */
+  int packetSize = Udp.parsePacket();
+  if (packetSize) {
+    Serial.print("Received packet of size ");
+    Serial.println(packetSize);
+    Serial.print("From ");
+    IPAddress remote = Udp.remoteIP();
+    for (int i=0; i < 4; i++) {
+      Serial.print(remote[i], DEC);
+      if (i < 3) {
+        Serial.print(".");
+      }
+    }
+    Serial.print(", port ");
+    Serial.println(Udp.remotePort());
+
+    // read the packet into packetBufffer
+    Udp.read(packetBuffer, UDP_TX_PACKET_MAX_SIZE);
+    Serial.println("Contents:");
+    traite(packetBuffer);
+
+    // send a reply to the IP address and port that sent us the packet we received
+    Udp.beginPacket(Udp.remoteIP(), Udp.remotePort());
+    Udp.write(ReplyBuffer);
+    Udp.write("\n");
+    Udp.endPacket();
+  }
+  delay(10);
+
+  if ( pirStatus == 1 && turned == 1 ) {
+    /*Start buzzer :*/
+  for (int thisNote = 0; thisNote < 8; thisNote++) {
+
+    // to calculate the note duration, take one second divided by the note type.
+    //e.g. quarter note = 1000 / 4, eighth note = 1000/8, etc.
+    int noteDuration = 1000 / noteDurations[thisNote];
+    tone(2, melody[thisNote], noteDuration);
+
+    // to distinguish the notes, set a minimum time between them.
+    // the note's duration + 30% seems to work well:
+    int pauseBetweenNotes = noteDuration * 1.30;
+    delay(pauseBetweenNotes);
+    // stop the tone playing:
+    noTone(2);
+  }
+  /Fonction compteur + à la fin du compteur musique dark vador
+  compteur(); 
+    for (int i = 0; i < sizeof(dark) / sizeof(dark[0]); i++) {
+    // Play the note on the buzzer
+    tone(2, dark[i], calculateNoteDuration(noteDurations2[i]));
+
+    // Delay between notes
+    delay(calculateNoteDuration(noteDurations2[i]) * 1.30);
+
+    // Stop playing the note
+    noTone(2);
+  }
+
+  delay(100000);
+  }
+ 
+}
+
+
