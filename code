@@ -354,8 +354,8 @@ void loop() {
     Udp.endPacket();
   }
   delay(10);
-
-  if ( pirStatus == 1 && turned == 1 ) {
+  // Si le capteur pir est actif (== 1) et que le le circtuit est lancée par UDP (turned ==1 ) alors on lance la boucle princpal
+  if ( pirStatus == 1 && turned == 1 ) { 
     /*Start buzzer :*/
   for (int thisNote = 0; thisNote < 8; thisNote++) {
 
