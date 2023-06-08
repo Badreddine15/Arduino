@@ -285,7 +285,7 @@ void doledon(){
   
   
 }
-
+//Lecture de la valeur du PIR
 void readPIR( ) { /* function readPIR */
   ////Test routine for PIR
   pirStatus = digitalRead(pirPin);
@@ -431,8 +431,8 @@ void loop() {
     // stop the tone playing:
     noTone(2);
   }
-  
-  compteur();
+  //Lancement du compteur
+  compteur(); 
      for (int thisNote = 0; thisNote < notes * 2; thisNote = thisNote + 2) {
 
     // calculates the duration of each note
@@ -456,7 +456,11 @@ void loop() {
     noTone(2);
      }
   }
-   // Parcourir chaque note de la mélodie
+  // Parti pour arreter apres un certain ce qui manquait lors de la presentation
+   delay(100000);
+   digitalWrite(A2, LOW);
+   turned ++;
+   
 }
 /*
   Processing sketch to run with this example
